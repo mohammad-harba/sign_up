@@ -42,8 +42,9 @@ class MyCustomFormState extends State<MyCustomForm> {
   final _formKey = GlobalKey<FormState>();
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final format = DateFormat("dd-MM-yyyy");
+  bool _autoValidate = false;
 
-  String name;
+  static String name;
   String email;
   String passWord;
   String dateOfBirth;
@@ -54,45 +55,24 @@ class MyCustomFormState extends State<MyCustomForm> {
 
     if (_formKey.currentState.validate()) {
       form.save();
-      print(name);
-      print(email);
-      print(passWord);
-      print(dateOfBirth);
 
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => SecondRoute()),
       );
+    }else {
+      setState(() {
+        _autoValidate = true;
+      });
     }
   }
-
-
-
-  String validatePassword(String value) {
-    Pattern pattern =
-        r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#\$&*~]).{8,}$';
-    RegExp regex = new RegExp(pattern);
-
-       if(value.isEmpty){
-         return "please enter a password";
-       }else if (!regex.hasMatch(value)) {
-       return """Your Password should be at least 8 charatters and it has to contain:
-                 Minimum 1 Upper case
-                 Minimum 1 lowercase
-                 Minimum 1 Numeric Number 
-                 Minimum 1 Special Character 
-                 Common Allow Character ( ! @ # \$ & * ~ )""";
-    } else {
-      return null;
-    }
-  }
-
 
   @override
   Widget build(BuildContext context) {
     // Build a Form widget using the _formKey created above.
     return Form(
         key: _formKey,
+        autovalidate: _autoValidate,
         child: Column(
             children: <Widget>[
               Container(
@@ -102,12 +82,7 @@ class MyCustomFormState extends State<MyCustomForm> {
                 border: OutlineInputBorder(),
                 labelText: 'Full Name',
                 ),
-                  validator: (value){
-                    if(value.isEmpty){
-                      return "Please enter your name";
-                    }
-                    return null;
-                  },
+                  validator: validateName,
                   onSaved: (value){
                   name = value;
                 },
@@ -120,12 +95,7 @@ class MyCustomFormState extends State<MyCustomForm> {
                     border: OutlineInputBorder(),
                     labelText: "Email Address",
                   ),
-                  validator: (value){
-                    if (!EmailValidator.validate(value)){
-                      return "please enter email address that has the form of example@example.com";
-                    }
-                    return null;
-                  },
+                  validator: validateEmail,
                   onSaved: (value){
                     email = value;
                   },
@@ -157,13 +127,7 @@ class MyCustomFormState extends State<MyCustomForm> {
                       labelText: "Select your date of birth",
                     ),
                     format: format,
-                    validator: (value){
-                      if(value == null ){
-                        return "Please select a date of birth";
-                      }else{
-                        return null;
-                      }
-                    },
+                    validator: validateDateOfBirth,
                     onSaved: (value){
                       dateOfBirth = value.toString();
                     },
@@ -191,6 +155,52 @@ class MyCustomFormState extends State<MyCustomForm> {
         )
     );
   }
+
+  String validateName(String value) {
+    if (value.length == 0)
+      return 'Please enter your name';
+    else if (value.length < 3){
+      return "Name too short";
+  }else{
+      return null;
+    }
+  }
+
+  String validateEmail(String value) {
+    if (!EmailValidator.validate(value)){
+      return "please enter email address that has the form of example@example.com";
+    }
+    return null;
+  }
+
+  String validatePassword(String value) {
+    Pattern pattern =
+        r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#\$&*~]).{8,}$';
+    RegExp regex = new RegExp(pattern);
+
+    if(value.isEmpty){
+      return "please enter a password";
+    }else if (!regex.hasMatch(value)) {
+      return """Your Password should be at least 8 charatters and it has to contain:
+                 Minimum 1 Upper case
+                 Minimum 1 lowercase
+                 Minimum 1 Numeric Number 
+                 Minimum 1 Special Character 
+                 Common Allow Character ( ! @ # \$ & * ~ )""";
+    } else {
+      return null;
+    }
+  }
+
+
+  String validateDateOfBirth(value) {
+    if(value == null ){
+      return "Please select a date of birth";
+    }else{
+      return null;
+    }
+  }
+
 
 }
 
